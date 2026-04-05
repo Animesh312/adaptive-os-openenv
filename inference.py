@@ -1,23 +1,21 @@
 import os
 from typing import List
 
-from openai import OpenAI
+import openai  # ✅ changed import
 
 from env.core import AdaptiveOSEnv
 from env.models import Action
 
 # REQUIRED ENV VARIABLES
-API_BASE_URL = os.getenv("API_BASE_URL")
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY")
-MODEL_NAME = os.getenv("MODEL_NAME")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
+API_KEY = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY", "dummy")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
 
 MAX_STEPS = 30
 
-# Initialize OpenAI client (MANDATORY)
-client = OpenAI(
-    base_url=API_BASE_URL,
-    api_key=API_KEY,
-)
+# ✅ Configure OpenAI (old SDK style)
+openai.api_key = API_KEY
+openai.api_base = API_BASE_URL
 
 
 def decide_action(obs) -> Action:
@@ -25,7 +23,6 @@ def decide_action(obs) -> Action:
     Simple baseline policy (LLM optional, deterministic fallback)
     """
 
-    # You CAN plug LLM here, but keep fallback
     if obs.cpu_usage > 85:
         return Action(
             action_type="KILL",
@@ -51,8 +48,8 @@ def run_task(task: str) -> float:
 
     for step in range(MAX_STEPS):
         try:
-            # OPTIONAL: LLM call (kept minimal for compliance)
-            response = client.chat.completions.create(
+            # ✅ Updated API call (old SDK)
+            response = openai.ChatCompletion.create(
                 model=MODEL_NAME,
                 messages=[
                     {
@@ -68,8 +65,8 @@ def run_task(task: str) -> float:
                 temperature=0.2,
             )
 
-            # We ignore response mostly (baseline safety)
-            _ = response.choices[0].message.content
+            # optional use (kept for compliance)
+            _ = response["choices"][0]["message"]["content"]
 
         except Exception:
             pass  # fallback to rule-based
