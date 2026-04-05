@@ -20,8 +20,9 @@ class OSSimulator:
         return self._get_state()
 
     def step(self, action):
-        self.timestep += 1
+        self.timestep += 1  
 
+        # 🔥 Apply action
         if action["action_type"] == "KILL":
             self.processes = [p for p in self.processes if p["pid"] != action["target_pid"]]
 
@@ -33,7 +34,7 @@ class OSSimulator:
         elif action["action_type"] == "SCHEDULE":
             self.processes.sort(key=lambda x: -x["priority"])
 
-        # dynamic workload spike for hard task realism
+        # 🔥 Dynamic workload spike
         if self.timestep % 5 == 0:
             self.processes.append({
                 "pid": len(self.processes),
@@ -42,7 +43,20 @@ class OSSimulator:
                 "priority": self.rng.randint(1, 5)
             })
 
-        # simulate CPU fluctuation
+        # 🔥 Random burst load (better than broken queue logic)
+        if self.rng.random() < 0.2:
+            self.processes.append({
+                "pid": len(self.processes),
+                "cpu": self.rng.randint(10, 30),
+                "memory": self.rng.randint(10, 30),
+                "priority": self.rng.randint(1, 5)
+            })
+
+        # 🔥 Prevent explosion
+        if len(self.processes) > 10:
+            self.processes.pop(0)
+
+        # 🔥 CPU fluctuation
         for p in self.processes:
             p["cpu"] = max(1, p["cpu"] + self.rng.randint(-3, 5))
 
@@ -50,7 +64,7 @@ class OSSimulator:
 
     def _get_state(self):
         return {
-            "cpu_usage": sum(p["cpu"] for p in self.processes),
+            "cpu_usage": min(100, sum(p["cpu"] for p in self.processes)),  # ✅ capped
             "memory_usage": sum(p["memory"] for p in self.processes),
             "processes": self.processes,
             "queue_length": len(self.processes),
