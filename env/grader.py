@@ -14,7 +14,7 @@ def compute_reward(state, task):
 
     elif task == "medium":
         # Balance CPU + queue
-        score = 0.6 * cpu_score + 0.4 * queue_score
+        score = 0.5 * cpu_score + 0.4 * queue_score
 
     else:  # hard
         # Advanced: stability + throughput + penalties
