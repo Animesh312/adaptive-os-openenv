@@ -4,7 +4,8 @@ def compute_reward(state, task):
 
     # Normalize helpers
     cpu_target = 70
-    cpu_score = max(0.0, 1.0 - abs(cpu - cpu_target) / cpu_target)
+    cpu_target_max = 100
+    cpu_score = max(0.0, 1.0 - abs(cpu - cpu_target) / cpu_target_max)
     queue_score = max(0.0, 1.0 - min(queue / 10.0, 1.0))
 
     if task == "easy":
