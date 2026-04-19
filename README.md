@@ -1,93 +1,310 @@
-# Adaptive OS OpenEnv Environment
+# Adaptive OS OpenEnv
 
-## Overview
+### AI-Driven CPU Resource Management Environment
 
-This project implements a real-world OpenEnv environment simulating an adaptive operating system scheduler.
+An **OpenEnv-compatible Reinforcement Learning environment** that simulates an **adaptive operating system scheduler** capable of dynamically managing CPU resources based on workload conditions.
 
-The agent must dynamically manage CPU usage, process scheduling, and system load under varying conditions.
+The project models **process scheduling, CPU utilization, and queue management** so that an AI agent can learn optimal scheduling decisions.
 
----
-
-## Motivation
-
-Modern operating systems must handle:
-- CPU load balancing
-- Process prioritization
-- Queue management under dynamic workloads
-
-This environment models these real-world challenges for evaluating AI agents.
+Built for the **Meta × PyTorch OpenEnv Hackathon**.
 
 ---
 
-## Environment Design
+# Problem
 
-### State (Observation)
+Modern operating systems must efficiently allocate CPU resources across many competing processes.
 
-- CPU usage (%)
-- Memory usage (%)
-- Active processes (PID, CPU, memory, priority)
-- Queue length
-- Timestep
+Poor scheduling decisions lead to:
 
----
+* High waiting time
+* Low CPU utilization
+* Process starvation
+* Reduced system throughput
 
-### Actions
-
-- `SCHEDULE` → allocate CPU
-- `KILL` → terminate process
-- `PRIORITIZE` → adjust priority
+This project simulates an **Adaptive Operating System Scheduler** where an AI agent learns to manage CPU resources dynamically.
 
 ---
 
-## Tasks
+# Key Features
 
-### Easy
-- Goal: Maintain stable CPU (~70%)
-- Focus: Basic system stability
-
-### Medium
-- Goal: Balance CPU + queue
-- Focus: Latency and throughput tradeoff
-
-### Hard
-- Goal: Handle overload conditions
-- Focus: Stability + backlog + penalties
+• Adaptive CPU scheduling environment
+• Reinforcement learning compatible interface
+• Process lifecycle simulation
+• Dynamic process queues
+• Priority-based scheduling policies
+• Resource utilization monitoring
+• OpenEnv compatible API
 
 ---
 
-## Reward Design
+# System Architecture
 
-- Continuous reward (0.0–1.0)
-- Encourages:
-  - Stable CPU
-  - Low queue length
-- Penalizes:
-  - Overload (CPU > 95%)
-  - High backlog
-  - Inefficient scheduling
+```
+                    +--------------------+
+                    |    RL Agent / LLM  |
+                    |  (Decision Policy) |
+                    +---------+----------+
+                              |
+                              | Action
+                              v
+                    +--------------------+
+                    |    Scheduler Core  |
+                    |  Scheduling Logic  |
+                    +---------+----------+
+                              |
+                              | Process Selection
+                              v
+                +-------------------------------+
+                |      Adaptive OS Environment  |
+                |                               |
+                |  +-------------------------+  |
+                |  | Process Queue           |  |
+                |  | P1 P2 P3 P4 ...         |  |
+                |  +-----------+-------------+  |
+                |              |                |
+                |              v                |
+                |     +---------------+        |
+                |     | CPU Execution |        |
+                |     | CPU0 CPU1     |        |
+                |     +-------+-------+        |
+                |             |                |
+                |             v                |
+                |        System Metrics       |
+                |  CPU Usage / Wait Time     |
+                +-------------+---------------+
+                              |
+                              | Reward Signal
+                              v
+                    +---------------------+
+                    | RL Agent Learns     |
+                    +---------------------+
+```
 
 ---
 
-## Difficulty Progression
+# Environment Design
+<h2 align="center">System Architecture</h2>
 
-The difficulty progression ensures monotonic performance degradation:
+<p align="center">
+<svg width="800" height="420" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
 
-easy > medium > hard
+<!-- Agent -->
+<rect x="320" y="20" width="160" height="60" rx="10" fill="#4CAF50"/>
+<text x="400" y="55" font-size="14" fill="white" text-anchor="middle">
+RL Agent / Policy
+</text>
+
+<!-- Scheduler -->
+<rect x="300" y="120" width="200" height="60" rx="10" fill="#2196F3"/>
+<text x="400" y="155" font-size="14" fill="white" text-anchor="middle">
+Scheduler Core
+</text>
+
+<!-- Process Queue -->
+<rect x="120" y="230" width="200" height="70" rx="10" fill="#FF9800"/>
+<text x="220" y="265" font-size="14" fill="white" text-anchor="middle">
+Process Queue
+</text>
+
+<!-- CPU -->
+<rect x="480" y="230" width="200" height="70" rx="10" fill="#9C27B0"/>
+<text x="580" y="265" font-size="14" fill="white" text-anchor="middle">
+CPU Execution
+</text>
+
+<!-- Metrics -->
+<rect x="300" y="340" width="200" height="60" rx="10" fill="#607D8B"/>
+<text x="400" y="375" font-size="14" fill="white" text-anchor="middle">
+System Metrics
+</text>
+
+<!-- Arrows -->
+
+<line x1="400" y1="80" x2="400" y2="120" stroke="black" stroke-width="2"/>
+<line x1="400" y1="180" x2="220" y2="230" stroke="black" stroke-width="2"/>
+<line x1="400" y1="180" x2="580" y2="230" stroke="black" stroke-width="2"/>
+
+<line x1="220" y1="300" x2="400" y2="340" stroke="black" stroke-width="2"/>
+<line x1="580" y1="300" x2="400" y2="340" stroke="black" stroke-width="2"/>
+
+<line x1="400" y1="340" x2="400" y2="80" stroke="black" stroke-width="2" stroke-dasharray="5,5"/>
+
+</svg>
+</p>
+
+## State Representation
+
+The agent observes the current system state:
+
+```
+cpu_usage
+queue_length
+process_priority
+burst_time
+waiting_time
+```
+
+Example observation:
+
+```
+CPU_USAGE=72%
+QUEUE=5
+PROCESS_PRIORITY=[1,3,2,4]
+```
 
 ---
 
-## Performance Baseline
+## Action Space
 
-- Easy: ~0.71  
-- Medium: ~0.64  
-- Hard: ~0.53  
+The agent can take the following actions:
 
-This demonstrates meaningful reward shaping and increasing task difficulty.
+```
+SCHEDULE      -> execute next process
+PRIORITIZE    -> increase process priority
+KILL          -> terminate resource-heavy process
+```
 
 ---
 
-## Setup
+## Reward Function
 
-```bash
+The scheduler receives rewards based on system efficiency.
+
+```
++1  process completed
++2  CPU utilization > 80%
+-1  process waiting too long
+-2  process starvation
+```
+
+Goal: **maximize overall system efficiency**.
+
+---
+
+# Project Structure
+
+```
+adaptive-os-openenv
+│
+├── api/                # API layer for environment interaction
+├── env/                # Core environment implementation
+│   ├── core.py
+│   ├── scheduler.py
+│   ├── process.py
+│
+├── scripts/            # utility and sanity scripts
+├── server/             # optional monitoring server
+│
+├── inference.py        # agent execution script
+├── openenv.yaml        # OpenEnv configuration
+├── Dockerfile          # container environment
+├── requirements.txt
+├── pyproject.toml
+└── README.md
+```
+
+---
+
+# Build Instructions
+
+Clone repository
+
+```
+git clone https://github.com/Animesh312/adaptive-os-openenv
+cd adaptive-os-openenv
+```
+
+Install dependencies
+
+```
 pip install -r requirements.txt
-uvicorn api.server:app --port 7860
+```
+
+---
+
+# Running the Environment
+
+Execute the scheduler agent:
+
+```
+python inference.py
+```
+
+---
+
+# Example Output
+
+```
+[START] task=medium
+
+[STEP] step=1 action=SCHEDULE reward=1.2
+[STEP] step=2 action=PRIORITIZE reward=0.9
+[STEP] step=3 action=SCHEDULE reward=1.1
+
+[END] task=medium score=0.74 steps=12
+```
+
+---
+
+# Scheduler Workflow
+
+```
+Process Arrival
+      ↓
+Process Queue
+      ↓
+Scheduler Decision
+      ↓
+CPU Execution
+      ↓
+System Metrics Updated
+      ↓
+Reward Generated
+      ↓
+Agent Learns
+```
+
+---
+
+# Use Cases
+
+This environment can be used to study:
+
+• Reinforcement learning for OS scheduling
+• Resource allocation strategies
+• Multi-agent resource optimization
+• AI driven system orchestration
+
+---
+
+# Future Improvements
+
+• Multi-core CPU scheduling
+• Memory-aware process management
+• GPU resource scheduling
+• Visualization dashboard
+• Distributed system scheduling
+
+---
+
+# Technologies
+
+Python
+OpenEnv Framework
+Reinforcement Learning
+Docker
+
+---
+
+# Author
+
+Animesh Wankhede
+
+GitHub
+https://github.com/Animesh312
+
+---
+
+# License
+
+MIT License
