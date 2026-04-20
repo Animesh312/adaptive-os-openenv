@@ -308,3 +308,123 @@ https://github.com/Animesh312
 # License
 
 MIT License
+
+
+# 🚀 AdaptiveOS: Multi-Agent RL for Autonomous Resource Management
+
+## 🧠 Overview
+
+AdaptiveOS is a reinforcement learning environment that simulates an operating system scheduler under dynamic and uncertain workloads.
+
+Unlike traditional schedulers, AdaptiveOS trains agents to:
+- Allocate compute efficiently
+- Handle unpredictable workloads
+- Optimize long-term system stability
+
+---
+
+## 🎯 Problem Statement
+
+Modern compute systems rely on static heuristics for scheduling processes. These approaches:
+- Fail under dynamic workloads
+- Cannot adapt to uncertainty
+- Optimize short-term metrics instead of long-term efficiency
+
+---
+
+## 💡 Our Solution
+
+We built a **partially observable, stochastic RL environment** where an agent learns to:
+
+- Schedule processes
+- Kill inefficient workloads
+- Prioritize critical tasks
+
+The agent must operate under:
+- Noisy observations
+- Hidden system state
+- Random workload spikes
+
+---
+
+## 🧪 Environment Design
+
+### State (Partially Observable)
+- Noisy CPU estimate
+- Queue length
+- Subset of visible processes
+
+### Actions
+- `SCHEDULE`
+- `KILL`
+- `PRIORITIZE`
+
+### Dynamics
+- Random CPU spikes
+- Stochastic process behavior
+- Hidden system state
+
+---
+
+## 🧠 Learning Objective
+
+The agent learns to:
+- Avoid CPU overload
+- Reduce queue delays
+- Minimize total system cost
+
+---
+
+## 🏆 Results
+
+| Metric            | Heuristic | RL Agent |
+|------------------|----------|----------|
+| Total Cost       | 126.45   | 105.20   |
+| Improvement      | —        | **16.81%** |
+
+✅ Consistent across EASY / MEDIUM / HARD environments
+
+---
+
+## 📊 Key Observations
+
+- RL agent avoids repeated overload states
+- Learns strategic use of `KILL`
+- Balances short-term vs long-term rewards
+- Adapts to stochastic system behavior
+
+---
+
+## 🏗️ Architecture
+
+
+adaptive-os/
+├── env/ # Environment logic
+├── agents/ # RL + heuristic agents
+├── api/ # FastAPI interface
+├── scripts/ # Training & evaluation
+├── inference.py # Demo runner
+
+
+---
+
+## 🌐 API
+
+Interactive environment:
+
+```bash
+POST /reset
+POST /step
+
+Example:
+
+curl -X POST http://localhost:7860/reset
+curl -X POST http://localhost:7860/step
+🧪 Training
+
+Minimal RL training loop using TRL:
+
+state = env.reset()
+while not done:
+    action = model(state)
+    next_state, reward, done = env.step(action)

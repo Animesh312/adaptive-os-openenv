@@ -13,6 +13,7 @@ class Observation(BaseModel):
     processes: List[Process]
     queue_length: int
     timestep: int
+    cost: float = 0.0   # 🔥 ADD THIS
 
 class Action(BaseModel):
     action_type: str  # SCHEDULE | KILL | PRIORITIZE

@@ -1,24 +1,32 @@
 from fastapi import FastAPI
 from env.core import AdaptiveOSEnv
 from env.models import Action
+from inference import decide_action
 
 app = FastAPI()
 env = AdaptiveOSEnv()
 
+
 @app.post("/reset")
 def reset():
-    return env.reset().dict()
+    return env.reset()   # no .dict()
 
 @app.post("/step")
-def step(action: Action):
-    obs, reward, done, info = env.step(action)
+def step():
+    obs = env.state()  # ✅ already Observation
+
+    action = decide_action(obs)
+
+    new_obs, reward, done, _ = env.step(action)
+
     return {
-        "observation": obs.dict(),
-        "reward": reward.value,
-        "done": done,
-        "info": info
+        "cpu": new_obs.cpu_usage,
+        "queue": new_obs.queue_length,
+        "cost": new_obs.cost,
+        "action": action.action_type,
+        "target": action.target_pid
     }
 
 @app.get("/state")
 def state():
-    return env.state().dict()
+    return env.sim._get_state()
