@@ -11,7 +11,7 @@ env = AdaptiveOSEnv()
 def reset():
     return env.reset()   # no .dict()
 
-@app.post("/step")
+@app.post("/step") 
 def step():
     obs = env.state()  # ✅ already Observation
 

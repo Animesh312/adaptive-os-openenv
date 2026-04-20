@@ -1,241 +1,148 @@
 import os
-
+import numpy as np
+from stable_baselines3 import PPO
+from stable_baselines3.common.env_util import make_vec_env
+from env.gym_env import AdaptiveOSGymEnv
 from env.core import AdaptiveOSEnv
 from env.models import Action
 
-# Optional OpenAI
-try:
-    import openai
-    USE_LLM = True
-except:
-    USE_LLM = False
-
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
-
 MAX_STEPS = 30
+MODEL_PATH = "ppo_adaptive_os.zip"
 
+def train_rl_agent(task="easy", total_timesteps=10000):
+    env = make_vec_env(lambda: AdaptiveOSGymEnv(task=task), n_envs=4)
+    model = PPO("MlpPolicy", env, verbose=1, gamma=0.99, ent_coef=0.01, learning_rate=3e-4)
+    model.learn(total_timesteps=total_timesteps)
+    model.save(MODEL_PATH)
+    return model
 
-# ----------------------------
-# LLM HELPER
-# ----------------------------
-def llm_decision(obs):
-    if not USE_LLM:
-        return None
-
-    try:
-        response = openai.ChatCompletion.create(
-            model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": "You are an OS scheduler."},
-                {"role": "user", "content": f"CPU={obs.cpu_usage}, Queue={obs.queue_length}"}
-            ],
-            max_tokens=20,
-            temperature=0.1,
-        )
-        return response["choices"][0]["message"]["content"]
-
-    except Exception:
-        return None
-
-
-# Global memory for adaptive learning
-action_memory = {
-    'kill_success': 0,
-    'prioritize_success': 0,
-    'schedule_success': 0,
-    'recent_actions': []
-}
-
-def update_memory(action_type, reward):
-    """Update action success memory"""
-    if reward > 0.5:  # Consider it a successful action
-        action_memory[f'{action_type.lower()}_success'] += 1
-
-    action_memory['recent_actions'].append((action_type, reward))
-    if len(action_memory['recent_actions']) > 10:  # Keep last 10 actions
-        action_memory['recent_actions'].pop(0)
-
-def get_action_preference():
-    """Get preferred action based on historical success"""
-    total_successes = sum(action_memory[f'{action}_success'] for action in ['kill', 'prioritize', 'schedule'])
-    if total_successes == 0:
-        return {'kill': 0.33, 'prioritize': 0.33, 'schedule': 0.34}
-
-    return {
-        'kill': action_memory['kill_success'] / total_successes,
-        'prioritize': action_memory['prioritize_success'] / total_successes,
-        'schedule': action_memory['schedule_success'] / total_successes
-    }
-
-# ----------------------------
-# ADAPTIVE RL POLICY (HACKATHON CHAMPION)
-# ----------------------------
-def decide_action(obs) -> Action:
-    """
-    Optimized policy using proven OS scheduling principles:
-    - Priority-based scheduling with efficiency weighting
-    - Proactive load management
-    - Cost-aware decision making
-    """
-
-    if not obs.processes:
-        return Action(action_type="SCHEDULE", target_pid=0)
-
-    processes = obs.processes
-    cpu_usage = obs.cpu_usage
-    queue_length = obs.queue_length
-
-    # Calculate process efficiency scores (CPU per unit priority)
-    process_metrics = []
-    for p in processes:
-        # Efficiency = CPU / priority (higher is better)
-        efficiency = p.cpu / max(p.priority, 1)
-
-        # Cost efficiency = efficiency / memory usage
-        cost_efficiency = efficiency / max(p.memory, 1)
-
-        process_metrics.append({
-            'process': p,
-            'efficiency': efficiency,
-            'cost_efficiency': cost_efficiency,
-            'is_high_cpu': p.cpu > 25,
-            'is_high_memory': p.memory > 40,
-            'is_low_priority': p.priority <= 2
-        })
-
-    # Sort by different criteria
-    by_efficiency = sorted(process_metrics, key=lambda x: x['efficiency'], reverse=True)
-    by_cost_efficiency = sorted(process_metrics, key=lambda x: x['cost_efficiency'], reverse=True)
-    by_cpu = sorted(process_metrics, key=lambda x: x['process'].cpu, reverse=True)
-    by_priority = sorted(process_metrics, key=lambda x: x['process'].priority)
-
-    # System state analysis
-    is_overloaded = cpu_usage > 85
-    is_high_load = cpu_usage > 70
-    has_long_queue = queue_length > 6
-    has_very_long_queue = queue_length > 8
-
-    # DECISION TREE BASED ON SYSTEM STATE
-
-    # CRITICAL: System overload - aggressive action needed
-    if is_overloaded:
-        # Kill the most CPU-intensive process
-        target = by_cpu[0]['process']
-        return Action(action_type="KILL", target_pid=target.pid)
-
-    # HIGH PRIORITY: Queue management
-    elif has_very_long_queue:
-        # Prioritize the most efficient process to clear queue faster
-        target = by_efficiency[0]['process']
-        return Action(action_type="PRIORITIZE", target_pid=target.pid, new_priority=5)
-
-    # MEDIUM PRIORITY: Load balancing
-    elif is_high_load:
-        # Find processes that can be optimized
-        low_priority_high_cpu = [
-            m for m in process_metrics
-            if m['is_low_priority'] and m['is_high_cpu']
-        ]
-
-        if low_priority_high_cpu:
-            # Prioritize efficient low-priority processes
-            target = max(low_priority_high_cpu, key=lambda x: x['efficiency'])['process']
-            return Action(action_type="PRIORITIZE", target_pid=target.pid, new_priority=4)
-
-        # If no low-priority high-CPU processes, kill least efficient
-        if len(processes) > 4:
-            target = by_efficiency[-1]['process']  # Least efficient
-            return Action(action_type="KILL", target_pid=target.pid)
-
-    # NORMAL OPERATIONS: Optimization
-    elif has_long_queue:
-        # Prioritize most cost-efficient process
-        target = by_cost_efficiency[0]['process']
-        new_priority = 5 if queue_length > 7 else 4
-        return Action(action_type="PRIORITIZE", target_pid=target.pid, new_priority=new_priority)
-
-    # STABLE STATE: Maintenance scheduling
+def load_rl_agent():
+    if os.path.exists(MODEL_PATH):
+        return PPO.load(MODEL_PATH)
     else:
-        # Schedule for optimal throughput
-        target = by_efficiency[0]['process']
+        print("No trained model found, using heuristic")
+        return None
 
-        # If we have high memory pressure, prefer low-memory processes
-        memory_pressure = obs.memory_usage > 350
-        if memory_pressure:
-            low_memory_processes = [m for m in process_metrics if not m['is_high_memory']]
-            if low_memory_processes:
-                target = min(low_memory_processes, key=lambda x: x['process'].memory)['process']
+def decide_action(obs) -> Action:
+    model = load_rl_agent()
+    if model:
+        gym_env = AdaptiveOSGymEnv()
+        gym_env.env.sim._get_state = lambda: obs.dict()  # hack to set state
+        state = gym_env._get_state(obs)
+        action_idx, _ = model.predict(state, deterministic=True)
+        if action_idx == 0:
+            return Action(action_type="SCHEDULE")
+        elif action_idx == 1:
+            heaviest = max(obs.processes, key=lambda p: p.cpu, default=None)
+            return Action(action_type="KILL", target_pid=heaviest.pid if heaviest else 0)
+        elif action_idx == 2:
+            lowest = min(obs.processes, key=lambda p: p.priority, default=None)
+            return Action(action_type="PRIORITIZE", target_pid=lowest.pid if lowest else 0, new_priority=5)
+        else:
+            return Action(action_type="SCHEDULE")
+    else:
+        # Improved heuristic
+        if not obs.processes:
+            return Action(action_type="SCHEDULE", target_pid=0)
 
-        return Action(action_type="SCHEDULE", target_pid=target.pid)
+        processes = obs.processes
+        cpu_usage = obs.cpu_usage
+        queue_length = obs.queue_length
 
-    # This should never be reached, but just in case
-    return Action(action_type="SCHEDULE", target_pid=processes[0].pid)
+        # sort helpers
+        by_cpu = sorted(processes, key=lambda p: p.cpu, reverse=True)
+        by_priority = sorted(processes, key=lambda p: p.priority)
 
+        is_overloaded = cpu_usage > 85
+        has_long_queue = queue_length > 6
 
-# ----------------------------
-# HEURISTIC BASELINE
-# ----------------------------
-def heuristic_policy(obs) -> Action:
-    heaviest = max(obs.processes, key=lambda p: p.cpu)
+        # 🔥 HANDLE GREEDY / PANIC (NEW INTELLIGENCE)
+        greedy_procs = [p for p in processes if p.strategy == "greedy"]
+        panic_procs = [p for p in processes if p.strategy == "panic"]
 
-    if obs.cpu_usage > 90:
-        return Action(action_type="KILL", target_pid=heaviest.pid)
+        # 1. overload → kill greedy first
+        if is_overloaded:
+            if greedy_procs:
+                return Action(action_type="KILL", target_pid=greedy_procs[0].pid)
+            return Action(action_type="KILL", target_pid=by_cpu[0].pid)
 
-    return Action(action_type="SCHEDULE", target_pid=heaviest.pid)
+        # 2. panic near deadline → prioritize
+        if panic_procs:
+            return Action(action_type="PRIORITIZE", target_pid=panic_procs[0].pid, new_priority=5)
 
+        # 3. long queue → prioritize efficient
+        if has_long_queue:
+            return Action(action_type="PRIORITIZE", target_pid=by_priority[0].pid, new_priority=5)
 
-# ----------------------------
-# RUN EPISODE
-# ----------------------------
+        # 4. default
+        return Action(action_type="SCHEDULE", target_pid=by_cpu[0].pid)
+
 def run_episode(task: str, policy_fn):
     env = AdaptiveOSEnv(task=task)
     obs = env.reset()
 
-    total_reward = 0.0
-    total_cost = 0.0
+    total_cost = 0
+    total_reward = 0
+    rewards = []
+    cpu_history = []
+    queue_history = []
 
-    for step in range(1, MAX_STEPS + 1):
-
+    for step in range(MAX_STEPS):
         action = policy_fn(obs)
         obs, reward, done, _ = env.step(action)
 
         total_cost += obs.cost
         total_reward += reward.value
+        rewards.append(reward.value)
+        cpu_history.append(obs.cpu_usage)
+        queue_history.append(obs.queue_length)
 
-        print(f"[STEP] step={step} reward={reward.value:.4f}")
+        print(f"[STEP {step}] reward={reward.value:.3f} cpu={obs.cpu_usage} queue={obs.queue_length}")
 
-        print(
-            f"# action={action.action_type} "
-            f"target={action.target_pid} "
-            f"cpu={obs.cpu_usage} "
-            f"queue={obs.queue_length} "
-            f"cost={obs.cost:.2f}"
-        )
+        # strategy logging
+        for p in obs.processes[:2]:
+            print(f"   PID={p.pid} strat={p.strategy} cpu={p.cpu}")
 
         if done:
             break
 
-    final_score = total_reward / MAX_STEPS
+    stability = max(queue_history) - min(queue_history)
+    reward_variance = np.var(rewards)
+    cpu_variance = np.var(cpu_history)
+    queue_oscillation = sum(abs(queue_history[i] - queue_history[i-1]) for i in range(1, len(queue_history))) / len(queue_history)
+    stability_score = 1 / (1 + stability + queue_oscillation)
 
-    print(f"[END] task={task} score={final_score:.4f} total_cost={total_cost:.2f}")
+    print("\n[METRICS]")
+    print(f"Total Cost: {total_cost:.2f}")
+    print(f"Avg Reward: {total_reward/MAX_STEPS:.3f}")
+    print(f"Reward Variance: {reward_variance:.3f}")
+    print(f"CPU Variance: {cpu_variance:.3f}")
+    print(f"Queue Stability: {stability}")
+    print(f"Queue Oscillation: {queue_oscillation:.3f}")
+    print(f"Stability Score: {stability_score:.3f}")
+    print(f"Peak Queue: {max(queue_history)}")
+    print(f"Avg CPU: {sum(cpu_history)/len(cpu_history):.2f}")
 
-    return total_cost, final_score
+    return total_cost
 
 
-# ----------------------------
-# MAIN
-# ----------------------------
 def main():
+    # Train RL agent if not exists
+    if not os.path.exists(MODEL_PATH):
+        print("Training RL agent...")
+        train_rl_agent(task="medium", total_timesteps=50000)  # train on medium
+        print("Training complete.")
+
     tasks = ["easy", "medium", "hard"]
 
     for task in tasks:
         print(f"\n===== TASK: {task.upper()} =====")
 
         print("\n--- RL AGENT ---")
-        rl_cost, rl_score = run_episode(task, decide_action)
+        rl_cost = run_episode(task, decide_action)
 
         print("\n--- HEURISTIC ---")
-        heuristic_cost, heuristic_score = run_episode(task, heuristic_policy)
+        heuristic_cost = run_episode(task, heuristic_policy)
 
         improvement = ((heuristic_cost - rl_cost) / heuristic_cost) * 100 if heuristic_cost > 0 else 0
 
