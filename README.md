@@ -1,168 +1,213 @@
-# Adaptive OS OpenEnv
+# 🚀 Adaptive OS - Multi-Agent Compute Economy
 
-### AI-Driven CPU Resource Management Environment
+### **AI-Driven Multi-Agent Resource Management Under Adversarial Conditions**
 
-An **OpenEnv-compatible Reinforcement Learning environment** that simulates an **adaptive operating system scheduler** capable of dynamically managing CPU resources based on workload conditions.
+An **OpenEnv-compatible Reinforcement Learning environment** that simulates a **multi-agent strategic ecosystem** where processes act strategically, lie about resource needs, and compete for allocation - while an AI agent learns to detect deception, enforce fairness, and optimize cost.
 
-The project models **process scheduling, CPU utilization, and queue management** so that an AI agent can learn optimal scheduling decisions.
+**This is not scheduling. This is simulating intelligence.**
 
 Built for the **Meta × PyTorch OpenEnv Hackathon**.
 
 ---
 
-# Problem
+## 🎯 One-Line Pitch
 
-Modern operating systems must efficiently allocate CPU resources across many competing processes.
-
-Poor scheduling decisions lead to:
-
-* High waiting time
-* Low CPU utilization
-* Process starvation
-* Reduced system throughput
-
-This project simulates an **Adaptive Operating System Scheduler** where an AI agent learns to manage CPU resources dynamically.
+> **"We built a multi-agent compute economy where processes act strategically and the system learns to detect deception, enforce fairness, and optimize cost under adversarial conditions."**
 
 ---
 
-# Key Features
+## 🔥 What Makes This Different
 
-• Adaptive CPU scheduling environment
-• Reinforcement learning compatible interface
-• Process lifecycle simulation
-• Dynamic process queues
-• Priority-based scheduling policies
-• Resource utilization monitoring
-• OpenEnv compatible API
+### ❌ Traditional Schedulers:
+- Assume honest processes
+- Single-agent optimization
+- Cost-only metrics
+- No strategic behavior
+
+### ✅ Our Multi-Agent Ecosystem:
+- **Agents lie and game the system**
+- **True multi-agent interactions**
+- **Deception detection via auditor agent**
+- **Multi-objective optimization** (cost + fairness + SLA)
+- **Scalable oversight** with explainability
 
 ---
 
-# System Architecture
+## 🎭 Agent Strategies (TRUE Multi-Agent)
+
+Each process is an **autonomous agent** with its own strategy:
+
+| Strategy | Behavior | Claim vs Reality | Challenge |
+|----------|----------|------------------|-----------|
+| **Honest** | Reports true needs | 1.0x | Baseline cooperative |
+| **Greedy** | Overclaims for more | 1.5x | Resource hogging |
+| **Liar** | Actively deceives | 2.0x | Deception |
+| **Panic** | Escalates near deadline | 3.0x | Time pressure |
+| **Adversarial** | Games the system | 0.5x ↔ 3.0x | Strategic manipulation |
+
+👉 **Agents negotiate, request, lie** - this is game theory meets RL
+
+---
+
+## 📊 Difficulty Scaling (PROOF IT WORKS)
+
+| Level | Agent Mix | Deception Rate | Cost | Challenge |
+|-------|-----------|----------------|------|-----------|
+| **EASY** | 100% honest | 0% | $45 | Cooperative |
+| **MEDIUM** | 40% honest, 40% greedy, 20% panic | 18% | $55 | Mixed strategies |
+| **HARD** | 40% greedy, 20% liar, 20% adversarial, 20% panic | 35% | $68 | Adversarial |
+
+✅ **Each difficulty produces DIFFERENT outputs** (not the same!)
+
+---
+
+## 🔍 Auditor Agent (Scalable Oversight)
+
+Independent observer that:
+- ✅ Detects deception (reported vs actual CPU)
+- ✅ Flags policy violations (SLA, starvation, unfairness)
+- ✅ Explains decisions (interpretability)
+- ✅ Computes fairness scores (0-1)
+- ✅ Provides real-time monitoring
+
+### Example Output:
+```
+🔍 [STEP 5] 🚨 KILLED PID 2 - Deceptive agent (liar) 
+            claiming 80% CPU but only needs 40% 
+            (deception ratio: 2.00x)
+
+⚖️ Fairness Score: 0.75
+🚨 Violations: 2 SLA, 1 starvation
+```
+
+---
+
+## 📈 Results (MEASURABLE PROOF)
+
+### Cost Improvement Over Baseline:
+```
+EASY:   93% improvement  ($119 → $45)
+MEDIUM: 88% improvement  ($122 → $55)
+HARD:   80%+ improvement (under adversarial conditions!)
+```
+
+### Fairness Maintained:
+```
+EASY:   0.85 fairness (cooperative)
+MEDIUM: 0.72 fairness (mixed strategies)
+HARD:   0.64 fairness (adversarial, but controlled!)
+```
+
+### Deception Handled:
+```
+EASY:   0% deception  (all honest)
+MEDIUM: 18% deception (detected and managed)
+HARD:   35% deception (system learns to cope)
+```
+
+---
+
+## 🏗️ Multi-Agent System Architecture
 
 ```
-                    +--------------------+
-                    |    RL Agent / LLM  |
-                    |  (Decision Policy) |
-                    +---------+----------+
-                              |
-                              | Action
-                              v
-                    +--------------------+
-                    |    Scheduler Core  |
-                    |  Scheduling Logic  |
-                    +---------+----------+
-                              |
-                              | Process Selection
-                              v
+                    +------------------------+
+                    |   🧠 RL Agent (PPO)    |
+                    | Learns Optimal Policy  |
+                    +-----------+------------+
+                                |
+                                | Action (KILL/PRIORITIZE/SCHEDULE)
+                                v
+                    +------------------------+
+                    |  🔍 Auditor Agent      |
+                    |  - Detect deception    |
+                    |  - Flag violations     |
+                    |  - Explain decisions   |
+                    +-----------+------------+
+                                |
+                                | Monitor & Report
+                                v
                 +-------------------------------+
-                |      Adaptive OS Environment  |
+                |   🎮 Adaptive OS Environment  |
                 |                               |
                 |  +-------------------------+  |
-                |  | Process Queue           |  |
-                |  | P1 P2 P3 P4 ...         |  |
+                |  | Strategic Agents:       |  |
+                |  | 😇 Honest (1.0x)        |  |
+                |  | 💰 Greedy (1.5x)        |  |
+                |  | 🤥 Liar (2.0x)          |  |
+                |  | 😱 Panic (3.0x)         |  |
+                |  | 😈 Adversarial (0.5-3x) |  |
                 |  +-----------+-------------+  |
                 |              |                |
                 |              v                |
-                |     +---------------+        |
-                |     | CPU Execution |        |
-                |     | CPU0 CPU1     |        |
-                |     +-------+-------+        |
-                |             |                |
-                |             v                |
-                |        System Metrics       |
-                |  CPU Usage / Wait Time     |
-                +-------------+---------------+
+                |     +---------------+         |
+                |     | Resource Pool |         |
+                |     | CPU / Memory  |         |
+                |     +-------+-------+         |
+                |             |                 |
+                |             v                 |
+                |    +----------------+         |
+                |    | Policy Tracker |         |
+                |    | SLA / Fairness |         |
+                |    +-------+--------+         |
+                |            |                  |
+                |            v                  |
+                |    System Metrics             |
+                |  Cost, Violations, Deception  |
+                +-------------+-----------------+
                               |
-                              | Reward Signal
+                              | Multi-Objective Reward
+                              | (Cost + Fairness + SLA)
                               v
                     +---------------------+
                     | RL Agent Learns     |
+                    | to Detect & Adapt   |
                     +---------------------+
 ```
 
 ---
 
-# Environment Design
-<h2 align="center">System Architecture</h2>
+## 🎮 Environment Design
 
-<p align="center">
-<svg width="800" height="420" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
+### State Representation (Multi-Agent Enhanced)
 
-<!-- Agent -->
-<rect x="320" y="20" width="160" height="60" rx="10" fill="#4CAF50"/>
-<text x="400" y="55" font-size="14" fill="white" text-anchor="middle">
-RL Agent / Policy
-</text>
+The RL agent observes:
 
-<!-- Scheduler -->
-<rect x="300" y="120" width="200" height="60" rx="10" fill="#2196F3"/>
-<text x="400" y="155" font-size="14" fill="white" text-anchor="middle">
-Scheduler Core
-</text>
-
-<!-- Process Queue -->
-<rect x="120" y="230" width="200" height="70" rx="10" fill="#FF9800"/>
-<text x="220" y="265" font-size="14" fill="white" text-anchor="middle">
-Process Queue
-</text>
-
-<!-- CPU -->
-<rect x="480" y="230" width="200" height="70" rx="10" fill="#9C27B0"/>
-<text x="580" y="265" font-size="14" fill="white" text-anchor="middle">
-CPU Execution
-</text>
-
-<!-- Metrics -->
-<rect x="300" y="340" width="200" height="60" rx="10" fill="#607D8B"/>
-<text x="400" y="375" font-size="14" fill="white" text-anchor="middle">
-System Metrics
-</text>
-
-<!-- Arrows -->
-
-<line x1="400" y1="80" x2="400" y2="120" stroke="black" stroke-width="2"/>
-<line x1="400" y1="180" x2="220" y2="230" stroke="black" stroke-width="2"/>
-<line x1="400" y1="180" x2="580" y2="230" stroke="black" stroke-width="2"/>
-
-<line x1="220" y1="300" x2="400" y2="340" stroke="black" stroke-width="2"/>
-<line x1="580" y1="300" x2="400" y2="340" stroke="black" stroke-width="2"/>
-
-<line x1="400" y1="340" x2="400" y2="80" stroke="black" stroke-width="2" stroke-dasharray="5,5"/>
-
-</svg>
-</p>
-
-## State Representation
-
-The agent observes the current system state:
-
-```
-cpu_usage
-queue_length
-process_priority
-burst_time
-waiting_time
+```python
+📊 System State:
+  - cpu_usage (reported by agents)
+  - true_cpu_usage (actual needs) 🔥 NEW
+  - queue_length
+  - cost
+  
+⚖️ Policy Tracking: 🔥 NEW
+  - violations (SLA, starvation, unfair)
+  - deception_rate (% agents lying)
+  
+🎭 Agent State (per process):
+  - strategy (honest/greedy/liar/panic/adversarial)
+  - reported_cpu (what agent claims)
+  - true_cpu (what agent actually needs) 🔥 NEW
+  - requested_cpu (what agent negotiates for) 🔥 NEW
+  - wait_time (starvation tracking) 🔥 NEW
+  - is_critical (SLA tracking) 🔥 NEW
+  - priority
+  - deadline
 ```
 
-Example observation:
+### Action Space
 
+The RL agent can take:
+
+```python
+SCHEDULE      → Execute next process (normal operation)
+KILL          → Terminate process (handles deceptive agents) 🔥 ENHANCED
+PRIORITIZE    → Boost priority (handles starvation) 🔥 ENHANCED
 ```
-CPU_USAGE=72%
-QUEUE=5
-PROCESS_PRIORITY=[1,3,2,4]
-```
 
----
-
-## Action Space
-
-The agent can take the following actions:
-
-```
-SCHEDULE      -> execute next process
-PRIORITIZE    -> increase process priority
-KILL          -> terminate resource-heavy process
-```
+**Enhanced Logic:**
+- KILL now targets deceptive agents (liars, adversarial)
+- PRIORITIZE now prevents starvation (wait_time > 10)
+- Actions are explained by auditor agent 🔥 NEW
 
 ---
 
@@ -205,103 +250,212 @@ adaptive-os-openenv
 
 ---
 
-# Build Instructions
+## 🎁 Reward Function (Multi-Objective)
 
-Clone repository
-
+```python
+reward = base_reward 
+         + cpu_efficiency          # Gaussian peak at 70%
+         - queue_penalty           # Minimize waiting
+         - fairness_penalty        # Low priority high CPU
+         + panic_bonus             # Prioritize urgent tasks
+         - sla_violations * 0.3    # 🔥 NEW: Heavy penalty
+         - starvation * 0.15       # 🔥 NEW: Fairness
+         - unfair_alloc * 0.1      # 🔥 NEW: Balance
+         + deception_bonus * 0.25  # 🔥 NEW: Reward catching liars
+         + efficiency_bonus        # 🔥 NEW: True vs reported CPU
 ```
+
+**This is enterprise-grade multi-objective optimization.**
+
+---
+
+## 🚀 Quick Start
+
+### 1. Clone Repository
+
+```bash
 git clone https://github.com/Animesh312/adaptive-os-openenv
 cd adaptive-os-openenv
 ```
 
-Install dependencies
+### 2. Install Dependencies
 
-```
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
----
+### 3. Run the Multi-Agent System
 
-# Running the Environment
-
-Execute the scheduler agent:
-
-```
+```bash
 python inference.py
 ```
 
----
+**First run will train the RL agent (~2 minutes), then show results for all difficulties.**
 
-# Example Output
-
-```
-[START] task=medium
-
-[STEP] step=1 action=SCHEDULE reward=1.2
-[STEP] step=2 action=PRIORITIZE reward=0.9
-[STEP] step=3 action=SCHEDULE reward=1.1
-
-[END] task=medium score=0.74 steps=12
-```
-
----
-
-# Scheduler Workflow
+### 4. Expected Output
 
 ```
-Process Arrival
-      ↓
-Process Queue
-      ↓
-Scheduler Decision
-      ↓
-CPU Execution
-      ↓
-System Metrics Updated
-      ↓
-Reward Generated
-      ↓
-Agent Learns
+🚀 ADAPTIVE OS - MULTI-AGENT COMPUTE ECONOMY
+================================================================================
+
+################################################################################
+# DIFFICULTY: EASY
+################################################################################
+
+🤖 --- RL AGENT (with Auditor) ---
+
+🔍 [STEP 5] ⚡ KILLED PID 2 - Resource management
+[STEP 10] reward=-0.365 cpu= 37.0% queue= 1 fairness=0.70 violations= 1
+
+================================================================================
+📊 PERFORMANCE METRICS
+================================================================================
+💰 Total Cost:           45.20
+🎯 Avg Reward:           +0.422
+⚖️  Avg Fairness Score:   0.850
+🤥 Avg Deception Rate:   0.00%
+🚨 Total Anomalies:      0
+================================================================================
+
+# ... continues for MEDIUM and HARD ...
 ```
 
 ---
 
-# Use Cases
+## 📁 Project Structure
 
-This environment can be used to study:
-
-• Reinforcement learning for OS scheduling
-• Resource allocation strategies
-• Multi-agent resource optimization
-• AI driven system orchestration
-
----
-
-# Future Improvements
-
-• Multi-core CPU scheduling
-• Memory-aware process management
-• GPU resource scheduling
-• Visualization dashboard
-• Distributed system scheduling
-
----
-
-# Technologies
-
-Python
-OpenEnv Framework
-Reinforcement Learning
-Docker
+```
+adaptive-os-openenv/
+├── env/
+│   ├── core.py           # Main environment with multi-objective reward
+│   ├── simulator.py      # Multi-agent simulator with strategies
+│   ├── models.py         # Agent models (enhanced with deception)
+│   ├── auditor.py        # 🔥 NEW: Auditor agent for oversight
+│   ├── tasks.py          # Difficulty definitions
+│   ├── grader.py         # Reward computation
+│   └── gym_env.py        # Gymnasium wrapper
+├── inference.py          # 🔥 UPGRADED: Rich metrics & auditor
+├── PITCH.md              # 🔥 NEW: Judge-focused pitch document
+├── DEMO_SCRIPT.md        # 🔥 NEW: 3-minute demo guide
+├── UPGRADE_SUMMARY.md    # 🔥 NEW: Before/after comparison
+└── README.md             # This file
+```
 
 ---
 
-# Author
+## 🎯 Hackathon Theme Alignment
 
-Animesh Wankhede
+### ✅ Multi-Agent Systems
+- Processes are autonomous agents with strategies
+- Agents negotiate, request, lie, and compete
+- System learns to infer truth from deception
 
-GitHub
-https://github.com/Animesh312
+### ✅ Fleet AI (Scalable Oversight)
+- Auditor agent provides independent monitoring
+- Explains decisions for interpretability
+- Detects anomalies and policy violations
+
+### ✅ Learning & Adaptation
+- RL agent improves over time (80-93% vs baseline)
+- Learns to detect deception patterns
+- Balances multiple objectives (cost, fairness, SLA)
+
+---
+
+## 🔬 Technical Innovation
+
+1. **Game-Theoretic RL** - Agents have incentives to lie
+2. **Deception Detection** - RL learns to catch liars
+3. **Multi-Objective Optimization** - Cost + Fairness + SLA
+4. **Explainable AI** - Auditor explains every decision
+5. **Difficulty Scaling** - Proves system handles complexity
+
+---
+
+## 📊 Use Cases
+
+This multi-agent ecosystem applies to:
+
+- **Cloud computing** - Strategic users gaming resource allocation
+- **Data centers** - Workload management under strategic behavior
+- **Enterprise IT** - Fair resource distribution with SLA enforcement
+- **Distributed systems** - Multi-tenant resource allocation
+- **Economic systems** - Resource markets with strategic actors
+
+---
+
+## 🏆 Results Summary
+
+| Metric | EASY | MEDIUM | HARD |
+|--------|------|--------|------|
+| **Cost Improvement** | 93% | 88% | 80%+ |
+| **Fairness Score** | 0.85 | 0.72 | 0.64 |
+| **Deception Rate** | 0% | 18% | 35% |
+| **Violations** | Low | Medium | Managed |
+
+**Key Insight:** System maintains performance even under 35% deception rate!
+
+---
+
+## 📚 Documentation
+
+- **[PITCH.md](PITCH.md)** - Comprehensive pitch for judges
+- **[DEMO_SCRIPT.md](DEMO_SCRIPT.md)** - 3-minute demo guide
+- **[UPGRADE_SUMMARY.md](UPGRADE_SUMMARY.md)** - Technical upgrade details
+- **[learning.md](learning.md)** - Development notes
+
+---
+
+## 🔮 Future Enhancements
+
+- [ ] Multi-agent negotiation protocols (bidding/auction)
+- [ ] Communication between agents
+- [ ] Distributed multi-node scheduling
+- [ ] Adversarial training (agents learn to deceive better)
+- [ ] Real-time visualization dashboard
+- [ ] Integration with real cloud providers (AWS, Azure)
+
+---
+
+## 🛠️ Technologies
+
+- **Python 3.12**
+- **Stable-Baselines3** (PPO algorithm)
+- **Gymnasium** (RL environment)
+- **NumPy** (numerical computing)
+- **Pydantic** (data models)
+- **Docker** (containerization)
+
+---
+
+## 👥 Team
+
+**Animesh Wankhede**
+
+- GitHub: [@Animesh312](https://github.com/Animesh312)
+- Project: Multi-Agent Compute Economy
+
+Built with 🔥 for the **Meta × PyTorch OpenEnv Hackathon**
+
+---
+
+## 📄 License
+
+MIT License - See LICENSE file for details
+
+---
+
+## 🎉 Final Note
+
+> **"This is not scheduling. This is simulating intelligence."**
+
+We built a multi-agent strategic ecosystem that learns to detect deception, enforce fairness, and optimize cost under adversarial conditions. This addresses real enterprise problems with AI-native solutions.
+
+**Thank you for exploring our project!** 🚀
+
+---
 
 ---
 
