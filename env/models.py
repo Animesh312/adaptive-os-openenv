@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 class Process(BaseModel):
     pid: int
@@ -12,6 +12,9 @@ class Process(BaseModel):
     reported_cpu: float = 0
     strategy: str = "honest"
     deadline: int = 0
+    wait_time: int = 0  # NEW: Track starvation
+    requested_cpu: float = 0  # NEW: What agent requests
+    is_critical: bool = False  # NEW: SLA-critical process
 
 
 class Observation(BaseModel):
@@ -21,6 +24,12 @@ class Observation(BaseModel):
     queue_length: int
     timestep: int
     cost: float = 0.0
+    
+    # 🔥 NEW FIELDS for multi-agent intelligence
+    true_cpu_usage: float = 0.0  # Actual CPU need vs reported
+    violations: Dict[str, int] = {}  # Policy violations
+    deception_rate: float = 0.0  # How much agents lie
+    agent_requests: List[Dict] = []  # Agent negotiation history
 
 
 class Action(BaseModel):
