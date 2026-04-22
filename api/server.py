@@ -1,10 +1,19 @@
 from fastapi import FastAPI
 from env.core import AdaptiveOSEnv
 from env.models import Action
-from inference import decide_action
+from inference import decide_action, load_rl_agent
 
 app = FastAPI()
 env = AdaptiveOSEnv()
+
+
+@app.on_event("startup")
+async def startup_event():
+    """🔥 Preload model at server startup to avoid first-call latency"""
+    print("\n🚀 Starting API server...")
+    print("📦 Preloading RL model...")
+    load_rl_agent()  # This will cache the model globally
+    print("✅ Server ready!\n")
 
 
 @app.post("/reset")
