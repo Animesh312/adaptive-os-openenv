@@ -75,3 +75,14 @@ docker build -t adaptive-os .
 docker run -p 7860:7860 adaptive-os
 curl -X POST http://localhost:7860/reset
 git remote set-url origin https://github.com/Animesh312/adaptive-os-openenv.git
+python3 inference.py --train
+python3 inference.py
+
+# Benchmark: RL vs Heuristic comparison across all difficulties
+python3 inference.py --mode benchmark
+
+# Demo: Full verbose output with auditor explanations
+python3 inference.py --mode demo
+
+# What-if: Simulate with custom malicious agent percentage
+python3 inference.py --mode whatif --malicious 50
