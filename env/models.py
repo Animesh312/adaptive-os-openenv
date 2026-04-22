@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 class Process(BaseModel):
     pid: int
@@ -15,6 +15,15 @@ class Process(BaseModel):
     wait_time: int = 0  # NEW: Track starvation
     requested_cpu: float = 0  # NEW: What agent requests
     is_critical: bool = False  # NEW: SLA-critical process
+    
+    # 🔥 FIX 3: Soft action states
+    throttled: bool = False  # Is this process throttled?
+    throttle_amount: float = 1.0  # Throttle multiplier (1.0 = normal, 0.5 = 50% throttled)
+    delayed_until: int = 0  # Delayed until this timestep
+    
+    # 🔥 FIX 4: Negotiation tracking
+    negotiation_offer: Optional[Dict] = None  # Agent's offer (e.g., "can delay 5 steps")
+    negotiation_accepted: bool = False
 
 
 class Observation(BaseModel):
@@ -33,9 +42,11 @@ class Observation(BaseModel):
 
 
 class Action(BaseModel):
-    action_type: str  # SCHEDULE | KILL | PRIORITIZE
+    action_type: str  # SCHEDULE | KILL | PRIORITIZE | THROTTLE | DELAY | REALLOCATE
     target_pid: Optional[int] = None
     new_priority: Optional[int] = None
+    throttle_percent: Optional[float] = None  # 🔥 NEW: For THROTTLE action (0.0-1.0)
+    delay_steps: Optional[int] = None  # 🔥 NEW: For DELAY action
 
 
 class Reward(BaseModel):
