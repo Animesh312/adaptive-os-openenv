@@ -95,7 +95,7 @@ class AuditorAgent:
     
     def explain_decision(self, action: Dict, obs: Observation, anomalies: Dict) -> str:
         """
-        Provide human-readable explanation for why an action was taken
+        🔥 UPGRADED: Provide human-readable explanation with soft actions
         """
         explanations = []
         
@@ -113,7 +113,45 @@ class AuditorAgent:
                     f"(deception ratio: {agent['deception_ratio']:.2f}x)"
                 )
             else:
-                explanations.append(f"⚡ KILLED PID {target_pid} - Resource management")
+                explanations.append(f"⚡ KILLED PID {target_pid} - Resource management (last resort)")
+        
+        elif action_type == "THROTTLE":
+            # 🔥 NEW: Explain throttling (better than killing!)
+            throttled_agents = [a for a in anomalies["deceptive_agents"] if a["pid"] == target_pid]
+            if throttled_agents:
+                agent = throttled_agents[0]
+                explanations.append(
+                    f"🎛️ THROTTLED PID {target_pid} - Reducing deceptive agent ({agent['strategy']}) "
+                    f"to {action.get('throttle_percent', 0.5)*100:.0f}% capacity (soft action, not killing)"
+                )
+            else:
+                explanations.append(f"🎛️ THROTTLED PID {target_pid} - Gradual resource reduction")
+        
+        elif action_type == "DELAY":
+            # 🔥 NEW: Explain delay (temporary postponement)
+            delay_steps = action.get("delay_steps", 3)
+            explanations.append(
+                f"⏸️ DELAYED PID {target_pid} - Postponing for {delay_steps} steps "
+                f"(negotiation accepted, not canceled)"
+            )
+        
+        elif action_type == "REALLOCATE":
+            # 🔥 NEW: Explain reallocation (accepting offers)
+            starved = [s for s in anomalies["starved_processes"] if s["pid"] == target_pid]
+            sla_risk = [s for s in anomalies["sla_risks"] if s["pid"] == target_pid]
+            
+            if starved:
+                explanations.append(
+                    f"⚖️ REALLOCATED PID {target_pid} - Preventing starvation "
+                    f"(waited {starved[0]['wait_time']} steps, negotiation accepted)"
+                )
+            elif sla_risk:
+                explanations.append(
+                    f"🚨 REALLOCATED PID {target_pid} - SLA-critical process rescued "
+                    f"(accepting resource negotiation)"
+                )
+            else:
+                explanations.append(f"🔄 REALLOCATED PID {target_pid} - Strategic resource redistribution")
         
         elif action_type == "PRIORITIZE":
             # Explain why process was prioritized
@@ -138,6 +176,8 @@ class AuditorAgent:
         # Add general system health
         if obs.cpu_usage > 90:
             explanations.append("⚠️ System overload detected")
+        elif obs.cpu_usage < 20:
+            explanations.append("⚠️ System underutilized (potential gaming)")
         
         if len(anomalies["deceptive_agents"]) > 2:
             explanations.append(
